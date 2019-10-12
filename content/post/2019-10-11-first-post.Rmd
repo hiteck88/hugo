@@ -1,13 +1,47 @@
 ---
-title: "2019-10-10 中国股票市场分析"
+title: "2019-10-11 中国股票市场分析"
 author: "Qi Mi"
-date: '2019-10-10'
-categories: ["R"]
-tags: ["R Markdown", "stock"]
-output: 
+date: '2019-10-11'
+slug: first-post
+tags: []
+categories: stock
+jupyter:
+  jupytext:
+    formats: ipynb,Rmd
+    text_representation:
+      extension: .Rmd
+      format_name: rmarkdown
+      format_version: '1.1'
+      jupytext_version: 1.2.4
+  kernelspec:
+    display_name: R
+    language: R
+    name: ir
+output:
   blogdown::html_page:
     toc: true
 ---
+```{js, echo = FALSE}
+/*Scroll to top when arrow up clicked BEGIN*/
+$(window).scroll(function() {
+    var height = $(window).scrollTop();
+    if (height > 100) {
+        $('#back2Top').fadeIn();
+    } else {
+        $('#back2Top').fadeOut();
+    }
+});
+$(document).ready(function() {
+    $("#back2Top").click(function(event) {
+        event.preventDefault();
+        $("html, body").animate({ scrollTop: 0 }, "slow");
+        return false;
+    });
+
+});
+ /*Scroll to top when arrow up clicked END*/
+
+```
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(warning = F, message = F)
@@ -18,6 +52,7 @@ library(gifski)
 library(ggimage)
 library(lubridate)
 library(usethis)
+library(tidyquant)
 name <- "宇通客车"
 today <- Sys.Date()
 ```
@@ -65,13 +100,46 @@ end_date = today
 code = '510050'
 df = Qi$QA_fetch_data_day_adv(code, start_date, end_date)
 df2 = rbind(mutate(df, name='50ETF', code = '510050'), py$df)
-df3 <- df2 %>% group_by(name) %>% mutate(adj.close = close /close[1]) 
+df3 <- df2 %>% group_by(name) %>% mutate(adj.close = (close /close[1] - 1) * 100  ) 
 df3$date <-  as.Date(df3$date)
 df3 <- data.frame(df3) 
 p <- ggplot() + geom_line(data=df3, aes(x=date, y=adj.close, color = name))
 ggplotly(p)
 ```
-# 50ETF clustering using dynamic time wrapping
+```{r echo= FALSE, fig.width=8,fig.height=10}
+library(ggridges)
+pr <- ggplot(df3, aes(date, name, height=adj.close / 10, group = name)) + geom_ridgeline(fill="lightblue")
+#d <- data.frame(x = rep(1:5, 3), y = c(rep(0, 5), rep(1, 5), rep(3, 5)),
+  #             height = c(0, 1, 3, 4, 0, 1, 2, 3, 5, 4, 0, 5, 4, 4, 1))
+#ggplot(d, aes(x, y, height = height, group = y)) + geom_ridgeline(fill="lightblue")
+
+#ggplot(movies[movies$year>1912,], aes(x = length, y = year, group = year)) +
+#  geom_density_ridges(scale = 10, size = 0.25, rel_min_height = 0.03) +
+#  theme_ridges() +
+#  scale_x_continuous(limits=c(1, 200), expand = c(0.01, 0)) +
+#  scale_y_reverse(breaks=c(2000, 1980, 1960, 1940, 1920, 1900), expand = c(0.01, 0))
+pr
+```
+```{r echo=FALSE,fig.width=12,fig.height=20}
+df_510050 =  df3 %>% filter(code == "510050") %>% select(date, adj.close)
+
+ggplot(df3, aes(x=date,y=adj.close, group=name)) + geom_line() + facet_wrap(~ name, ncol = 5, scales = "free") +
+  geom_line(data = df_510050, aes(date, adj.close), colour = "red") 
+
+
+```
+
+```{r echo=FALSE, fig.width=15,fig.height=25}
+    df3 %>% 
+    ggplot(aes(x = date, y = close, group  = name)) +
+    geom_candlestick(aes(open = open, high = high, low = low, close = close), fill_up = "black") +
+    #labs(title = "AAPL Candlestick Chart", y = "Closing Price", x = "") +
+    #theme_tq() +
+    geom_ma(n = 5, color = "darkgreen", linetype= "solid") +
+    facet_wrap(~ name, ncol = 5, scales = "free") 
+```
+
+# 50ETF clustering DTW
 ```{r echo = FALSE, fig.width=10, fig.height=10}
 start_date = '2019-07-01'
 end_date = today
