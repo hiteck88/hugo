@@ -2,25 +2,14 @@
 title: "2019-10-11 中国股票市场分析"
 author: "Qi Mi"
 date: '2019-10-11'
-slug: first-post
-tags: []
-categories: stock
-jupyter:
-  jupytext:
-    formats: ipynb,Rmd
-    text_representation:
-      extension: .Rmd
-      format_name: rmarkdown
-      format_version: '1.1'
-      jupytext_version: 1.2.4
-  kernelspec:
-    display_name: R
-    language: R
-    name: ir
-output:
+categories: ["R"]
+tags: ["R Markdown", "stock"]
+output: 
   blogdown::html_page:
     toc: true
 ---
+
+
 ```{js, echo = FALSE}
 /*Scroll to top when arrow up clicked BEGIN*/
 $(window).scroll(function() {
