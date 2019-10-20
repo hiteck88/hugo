@@ -41,6 +41,7 @@ library(ggimage)
 library(lubridate)
 library(usethis)
 library(tidyquant)
+library(ggridges)
 name <- "宇通客车"
 today <- Sys.Date()
 ```
@@ -108,7 +109,14 @@ pr <- ggplot(df3, aes(date, name, height=adj.close / 10, group = name)) + geom_r
 #  scale_y_reverse(breaks=c(2000, 1980, 1960, 1940, 1920, 1900), expand = c(0.01, 0))
 pr
 ```
-```{r echo=FALSE,fig.width=15,fig.height=15}
+```{r echo= FALSE, fig.width=8,fig.height=10}
+library(ggridges)
+df4 <- df3 %>% group_by(name) %>% filter(date >= "2019-09-01")
+pr4 <- ggplot(df4, aes(date, name, height=adj.close /10, group = name)) + geom_ridgeline(fill="lightblue")
+pr4
+```
+
+```{r echo=FALSE,fig.width=15,fig.height=25}
 df_510050 =  df3 %>% filter(code == "510050") %>% select(date, adj.close)
 
 ggplot(df3, aes(x=date,y=adj.close, group=name)) + geom_line() + facet_wrap(~ name, ncol = 6, scales = "free") +
@@ -116,7 +124,7 @@ ggplot(df3, aes(x=date,y=adj.close, group=name)) + geom_line() + facet_wrap(~ na
 
 ```
 
-```{r echo=FALSE, fig.width=15,fig.height=15}
+```{r echo=FALSE, fig.width=15,fig.height=25}
     df3 %>% 
     ggplot(aes(x = date, y = close, group  = name)) +
     geom_candlestick(aes(open = open, high = high, low = low, close = close), fill_up = "black") +

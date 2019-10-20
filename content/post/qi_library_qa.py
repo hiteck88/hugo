@@ -114,8 +114,7 @@ def QA_fetch_data_day_adv(code, start_date, end_date):
 
     if code in code_list:
         df = QA.QA_fetch_stock_day_adv([code], start_date, end_date)
-
-    if code in index_list:
+    else:
         df = QA.QA_fetch_index_day_adv([code], start_date, end_date)
 
     data = df.data[['open','high','low','close','volume','amount']]
