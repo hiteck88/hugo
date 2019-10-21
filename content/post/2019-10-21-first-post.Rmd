@@ -1,7 +1,7 @@
 ---
-title: "2019-10-15 中国股票市场分析"
+title: "2019-10-21 中国股票市场分析"
 author: "Qi Mi"
-date: '2019-10-15'
+date: '2019-10-21'
 categories: ["R"]
 tags: ["R Markdown", "stock"]
 output: 
@@ -94,7 +94,6 @@ df3$date <-  as.Date(df3$date)
 df3 <- data.frame(df3) 
 p <- ggplot() + geom_line(data=df3, aes(x=date, y=adj.close, color = name))
 ggplotly(p)
-
 ```
 
 ```{r echo= FALSE, fig.width=8,fig.height=10}
@@ -110,8 +109,8 @@ ggplotly(p)
   #  scale_x_continuous(limits=c(1, 200), expand = c(0.01, 0)) +
   #  scale_y_reverse(breaks=c(2000, 1980, 1960, 1940, 1920, 1900), expand = c(0.01, 0))
   pr
-```
 
+```
 ```{r echo= FALSE, fig.width=8,fig.height=10}
 library(ggridges)
 pre_day =  today - as.difftime(30, unit='days')
