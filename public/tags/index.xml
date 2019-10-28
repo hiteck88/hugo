@@ -5,7 +5,7 @@
     <link>/tags/</link>
       <atom:link href="/tags/index.xml" rel="self" type="application/rss+xml" />
     <description>Tags</description>
-    <generator>Source Themes Academic (https://sourcethemes.com/academic/)</generator><language>en-us</language><lastBuildDate>Sat, 26 Oct 2019 00:00:00 +0000</lastBuildDate>
+    <generator>Source Themes Academic (https://sourcethemes.com/academic/)</generator><language>en-us</language><lastBuildDate>Mon, 28 Oct 2019 00:00:00 +0000</lastBuildDate>
     <image>
       <url>/img/icon-192.png</url>
       <title>Tags</title>
@@ -15,7 +15,7 @@
     <item>
       <title>R Markdown</title>
       <link>/tags/r-markdown/</link>
-      <pubDate>Sat, 26 Oct 2019 00:00:00 +0000</pubDate>
+      <pubDate>Mon, 28 Oct 2019 00:00:00 +0000</pubDate>
       <guid>/tags/r-markdown/</guid>
       <description></description>
     </item>
@@ -23,7 +23,7 @@
     <item>
       <title>stock</title>
       <link>/tags/stock/</link>
-      <pubDate>Sat, 26 Oct 2019 00:00:00 +0000</pubDate>
+      <pubDate>Mon, 28 Oct 2019 00:00:00 +0000</pubDate>
       <guid>/tags/stock/</guid>
       <description></description>
     </item>

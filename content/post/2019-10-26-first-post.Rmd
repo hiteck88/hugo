@@ -313,21 +313,6 @@ output.stockWeek(code)
 output.stockMonth(code)
 ```
 
-# H:300244（迪安诊断）的分析
-
-```{r echo=FALSE}
-code = '300244'
-output.gapTable(code)
-```
-
-```{r echo=FALSE, fig.width=8, fig.height=6}
-par(mfrow=c(2,2))
-output.stock(code)
-output.stock(code)
-output.stockWeek(code)
-output.stockMonth(code)
-```
-
 
 # H2:600703（三安光电）的分析
 
