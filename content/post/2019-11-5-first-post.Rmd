@@ -1,0 +1,413 @@
+---
+title: "2019-11-05 中国股票市场分析"
+author: "Qi Mi"
+date: '2019-11-05'
+categories: ["R"]
+tags: ["R Markdown", "stock"]
+output: 
+  blogdown::html_page:
+    toc: true
+---
+
+
+```{js, echo = FALSE}
+/*Scroll to top when arrow up clicked BEGIN*/
+$(window).scroll(function() {
+    var height = $(window).scrollTop();
+    if (height > 100) {
+        $('#back2Top').fadeIn();
+    } else {
+        $('#back2Top').fadeOut();
+    }
+});
+$(document).ready(function() {
+    $("#back2Top").click(function(event) {
+        event.preventDefault();
+        $("html, body").animate({ scrollTop: 0 }, "slow");
+        return false;
+    });
+});
+ /*Scroll to top when arrow up clicked END*/
+```
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(warning = F, message = F)
+options(warn = -1)
+source("qi_r_function.r")
+library(gganimate)
+library(gifski)
+library(ggimage)
+library(lubridate)
+library(usethis)
+library(tidyquant)
+library(ggridges)
+name <- "宇通客车"
+today <- Sys.Date()
+```
+
+
+  
+```{python, echo = FALSE}
+import QUANTAXIS as QA
+import pandas as pd
+from QUANTAXIS.QAFetch.QAQuery_Advance import *
+from QUANTAXIS.QAFetch.QATdx import *
+```
+
+
+```{python, echo = FALSE}
+import datetime
+today = datetime.datetime.today().strftime('%Y-%m-%d')
+res = QA_fetch_stock_block_adv()
+code50 = res.get_block('上证50').code
+code50.pop(code50.index('600030'))
+start_date = '2019-08-01'
+end_date = today
+df = QA_fetch_stock_day_adv(code50, start_date, end_date).to_qfq().data
+df = df.reset_index()
+codelist = QA_fetch_stock_list()
+codelist = codelist[['code','name']].reset_index(drop=True)
+df = df.merge(codelist, on='code', how='left')[['date','code','open','high','low','close','volume','amount', 'name']]
+
+```
+
+```{python, echo = FALSE}
+mycode = ['600066', '002939', '000830', '600817', '000786', '603882','300244']
+df_my = QA_fetch_stock_day_adv(mycode, start_date, end_date).to_qfq().data
+df_my = df_my.reset_index()
+df_my = df_my.merge(codelist, on='code', how='left')[['date','code','open','high','low','close','volume','amount', 'name']]
+
+
+```
+
+# A: 50ETF的分析
+
+```{r, echo = FALSE, fig.width=10, fig.height=7}
+library(plotly)
+start_date = '2019-08-01'
+end_date = today
+code = '510050'
+df <- Qi$QA_fetch_data_day_adv(code, start_date, end_date)
+df2 <- rbind(mutate(df, name='50ETF', code = '510050'), py$df)
+df3 <- df2 %>% group_by(name) %>% mutate(adj.close = (close /close[1] - 1) * 100  ) 
+df3$date <-  as.Date(df3$date)
+df3 <- data.frame(df3) 
+p <- ggplot() + geom_line(data=df3, aes(x=date, y=adj.close, color = name))
+ggplotly(p)
+```
+
+```{r echo= FALSE, fig.width=8,fig.height=10}
+  library(ggridges)
+  pr <- ggplot(df3, aes(date, name, height=adj.close / 10, group = name)) + geom_ridgeline(fill="lightblue")
+  #d <- data.frame(x = rep(1:5, 3), y = c(rep(0, 5), rep(1, 5), rep(3, 5)),
+    #             height = c(0, 1, 3, 4, 0, 1, 2, 3, 5, 4, 0, 5, 4, 4, 1))
+  #ggplot(d, aes(x, y, height = height, group = y)) + geom_ridgeline(fill="lightblue")
+  
+  #ggplot(movies[movies$year>1912,], aes(x = length, y = year, group = year)) +
+  #  geom_density_ridges(scale = 10, size = 0.25, rel_min_height = 0.03) +
+  #  theme_ridges() +
+  #  scale_x_continuous(limits=c(1, 200), expand = c(0.01, 0)) +
+  #  scale_y_reverse(breaks=c(2000, 1980, 1960, 1940, 1920, 1900), expand = c(0.01, 0))
+  pr
+
+```
+```{r echo= FALSE, fig.width=8,fig.height=10}
+library(ggridges)
+pre_day =  today - as.difftime(30, unit='days')
+df4 <- df3 %>% group_by(name) %>% filter(date >= pre_day)
+pr4 <- ggplot(df4, aes(date, name, height=-adj.close /10, group = name)) + geom_ridgeline(fill="lightblue")
+pr4
+```
+
+```{r echo=FALSE,fig.width=15,fig.height=25}
+df_510050 =  df3 %>% filter(code == "510050") %>% select(date, adj.close)
+
+ggplot(df3, aes(x=date,y=adj.close, group=name)) + geom_line() + facet_wrap(~ name, ncol = 6, scales = "free") +
+  geom_line(data = df_510050, aes(date, adj.close), colour = "red") 
+
+```
+
+```{r echo=FALSE, fig.width=15,fig.height=25}
+    df3 %>% 
+    ggplot(aes(x = date, y = close, group  = name)) +
+    geom_candlestick(aes(open = open, high = high, low = low, close = close), fill_up = "black") +
+    #labs(title = "AAPL Candlestick Chart", y = "Closing Price", x = "") +
+    #theme_tq() +
+    geom_ma(n = 5, color = "darkgreen", linetype= "solid") +
+    facet_wrap(~ name, ncol = 5, scales = "free") 
+```
+
+# 50ETF clustering DTW
+```{r echo = FALSE, fig.width=10, fig.height=10}
+start_date = '2019-08-01'
+end_date = today
+code = '510050'
+df = Qi$QA_fetch_data_day_adv(code, start_date, end_date)
+df2 = rbind(mutate(df, name='50ETF', code = '510050'), py$df)
+df2<- df2 %>% select(date,close,name) %>% pivot_wider(names_from = date, values_from = close) 
+row.names(df2) <- df2$name
+df2$name = NULL
+df2.norm = t(BBmisc::normalize(t(df2), method="standardize",margin=2))
+df2<-t(scale(t(df2)))
+library(ape)
+disMatrix <-  dist(df2, method="euclidean")
+hc<- hclust(disMatrix, method="average")
+colors =c("red","blue","green","black")
+clus4 = cutree(hc,4)
+#plot(as.phylo(hc), type="fan", tip.color = colors[clus4],label.offset =0 , cex=1)
+
+```
+
+```{r, echo=FALSE, fig.width=10, fig.height =10}
+library(dtwclust)
+lastcol = df2[,ncol(df2)]
+print(lastcol[is.na(lastcol)])
+
+clust.hier <- tsclust(df2, type="h",k=10L,distance="dtw")
+plot(as.phylo(clust.hier), type="fan", tip.color = colors[clus4],label.offset =0 , cex=1)
+plot(clust.hier,type="sc")
+sort(clust.hier@cluster)
+
+
+```
+
+
+```{r, echo= FALSE,   fig.width=10, fig.height=7}
+library(gifski)
+
+start_date = '2019-08-01'
+end_date = today
+code = '510050'
+df = Qi$QA_fetch_data_day_adv(code, start_date, end_date)
+df2 = rbind(mutate(df, name='50ETF', code = '510050'), py$df_my)
+df3 <- df2 %>% group_by(name) %>% mutate(adj.close = close /close[1]) 
+df3$date <-  as.Date(df3$date)
+df3 <- data.frame(df3) 
+
+p2 <- ggplot() + geom_line(data=df3, aes(x=date, y=adj.close, group=name, color = name))
+#t <- p2 + transition_reveal(as.numeric(date)) 
+#gif <- animate(t, end_pause = 25, width = 800, height =400 , fps =8)
+#gif
+ggplotly(p2)
+
+```
+
+```{r echo=FALSE}
+code = '510050'
+output.gapTable(code)
+```
+
+```{r echo=FALSE, fig.width=8, fig.height=6}
+par(mfrow=c(2,2))
+output.stock(code)
+output.stock(code)
+output.stockWeek(code)
+output.stockMonth(code)
+```
+
+# B:长城证券的分析
+
+```{r echo=FALSE}
+code = '002939'
+output.gapTable(code)
+
+```
+
+```{r echo=FALSE, fig.width=8, fig.height=6}
+par(mfrow=c(2,2))
+output.stock(code)
+output.stock(code)
+output.stockWeek(code)
+output.stockMonth(code)
+```
+
+
+# C:600066（宇通客车）的分析
+
+```{r echo=FALSE}
+code = '600066'
+output.gapTable(code)
+```
+
+```{r echo=FALSE, fig.width=8, fig.height=6}
+par(mfrow=c(2,2))
+output.stock(code)
+output.stock(code)
+output.stockWeek(code)
+output.stockMonth(code)
+```
+
+# D:000830（鲁西化工）的分析
+
+```{r echo=FALSE}
+code = '000830'
+output.gapTable(code)
+```
+
+```{r echo=FALSE, fig.width=8, fig.height=6}
+par(mfrow=c(2,2))
+output.stock(code)
+output.stock(code)
+output.stockWeek(code)
+output.stockMonth(code)
+```
+
+# E:600817（ST宏盛）的分析
+
+```{r echo=FALSE}
+code = '600817'
+output.gapTable(code)
+```
+
+```{r echo=FALSE, fig.width=8, fig.height=6}
+par(mfrow=c(2,2))
+output.stock(code)
+output.stock(code)
+output.stockWeek(code)
+output.stockMonth(code)
+```
+
+# F:000786（北新建材）的分析
+
+```{r echo=FALSE}
+code = '000786'
+output.gapTable(code)
+```
+
+```{r echo=FALSE, fig.width=8, fig.height=6}
+par(mfrow=c(2,2))
+output.stock(code)
+output.stock(code)
+output.stockWeek(code)
+output.stockMonth(code)
+```
+
+# G:603882 (金域医学)的分析
+
+```{r echo=FALSE}
+code = '603882'
+output.gapTable(code)
+```
+
+```{r echo=FALSE, fig.width=8, fig.height=6}
+par(mfrow=c(2,2))
+output.stock(code)
+output.stock(code)
+output.stockWeek(code)
+output.stockMonth(code)
+```
+
+
+# H:300244（迪安诊断）的分析
+
+```{r echo=FALSE}
+code = '300244'
+output.gapTable(code)
+```
+
+```{r echo=FALSE, fig.width=8, fig.height=6}
+par(mfrow=c(2,2))
+output.stock(code)
+output.stock(code)
+output.stockWeek(code)
+output.stockMonth(code)
+```
+
+
+# H2:600703（三安光电）的分析
+
+```{r echo=FALSE}
+code = '600703'
+output.gapTable(code)
+```
+
+```{r echo=FALSE, fig.width=8, fig.height=6}
+par(mfrow=c(2,2))
+output.stock(code)
+output.stock(code)
+output.stockWeek(code)
+output.stockMonth(code)
+```
+
+
+# H3:601138（工业富联）的分析
+
+```{r echo=FALSE}
+code = '601138'
+output.gapTable(code)
+```
+
+```{r echo=FALSE, fig.width=8, fig.height=6}
+par(mfrow=c(2,2))
+output.stock(code)
+output.stock(code)
+output.stockWeek(code)
+output.stockMonth(code)
+```
+
+
+# H4:600340（华夏幸福）的分析
+
+```{r echo=FALSE}
+code = '600340'
+output.gapTable(code)
+```
+
+```{r echo=FALSE, fig.width=8, fig.height=6}
+par(mfrow=c(2,2))
+output.stock(code)
+output.stock(code)
+output.stockWeek(code)
+output.stockMonth(code)
+```
+
+# H5:600309（万华化学）的分析
+
+```{r echo=FALSE}
+code = '600309'
+output.gapTable(code)
+```
+
+```{r echo=FALSE, fig.width=8, fig.height=6}
+par(mfrow=c(2,2))
+output.stock(code)
+output.stock(code)
+output.stockWeek(code)
+output.stockMonth(code)
+```
+
+
+# H5:601066（中信建投）的分析
+
+```{r echo=FALSE}
+code = '601066'
+output.gapTable(code)
+```
+
+```{r echo=FALSE, fig.width=8, fig.height=6}
+par(mfrow=c(2,2))
+output.stock(code)
+output.stock(code)
+output.stockWeek(code)
+output.stockMonth(code)
+```
+
+# H6:601186（中国铁建）的分析
+
+```{r echo=FALSE}
+code = '601186'
+output.gapTable(code)
+```
+
+```{r echo=FALSE, fig.width=8, fig.height=6}
+par(mfrow=c(2,2))
+output.stock(code)
+output.stock(code)
+output.stockWeek(code)
+output.stockMonth(code)
+```
+
+
+
+
+

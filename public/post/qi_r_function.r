@@ -49,7 +49,7 @@ output.stock <- function(code){
   #data$date = df1$datetime$values
   df = tk_xts(df1)
   #colnames(df) <- c('Open', 'High', 'Low', 'Close', 'Volume', 'Amount')
-  chart_Series(df,subset='2019-6::2019-10',TA="add_Vo();add_BBands();add_SMA(5);add_MACD()", theme = myTheme, name= paste("日", code))
+  chart_Series(df,subset='2019-6::2019-11',TA="add_Vo();add_BBands();add_SMA(5);add_MACD()", theme = myTheme, name= paste("日", code))
   
 }
 
@@ -57,7 +57,7 @@ output.stockWeek <- function(code){
   df1 = Qi$QA_resample_day_R(code, '2019-1-1',today, 'W')
   df = tk_xts(df1)
   #colnames(df) <- c('Open', 'High', 'Low', 'Close', 'Volume', 'Amount')
-  chart_Series(df,subset='2019-1::2019-10',TA="add_Vo();add_SMA(5)", theme = myTheme,name= paste("周",code))
+  chart_Series(df,subset='2019-1::2019-11',TA="add_Vo();add_SMA(5)", theme = myTheme,name= paste("周",code))
 }
 
 output.stockMonth <- function(code){
@@ -65,7 +65,7 @@ output.stockMonth <- function(code){
   #data = Qi$QA_resample_day_R(df1, 'M')
   df = tk_xts(df1)
   #colnames(df) <- c('Open', 'High', 'Low', 'Close', 'Volume', 'Amount')
-  chart_Series(df,subset='2018-1::2019-10',TA="add_Vo();add_SMA(5)",theme = myTheme,name= paste("月",code))
+  chart_Series(df,subset='2018-1::2019-11',TA="add_Vo();add_SMA(5)",theme = myTheme,name= paste("月",code))
   }
 
 output.gapTable <- function(code){
